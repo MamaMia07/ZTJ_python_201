@@ -10,7 +10,7 @@ class Response():
 
     def stop_resp(self, add):
         print(f"Connection terminated by {add[0]}")
-        conn_socket.send(f"Unconnected".encode('utf-8'))
+        clnt_conn_socket.send(f"Unconnected".encode('utf-8'))
         
     def help_resp(self):
         pass
@@ -40,13 +40,14 @@ start_server = time.time()
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
     server.bind((HOST, PORT))
     server.listen()
-    conn_socket, address = server.accept()
-
-    with conn_socket:
+    print("Listening...")
+    clnt_conn_socket, address = server.accept()
+   
+    with clnt_conn_socket:
         print(f"Connected with {address[0]}")
         while True:
             #data_recv = conn_socket.recv(1024)
-            data = conn_socket.recv(1024).decode("utf-8")
+            data = clnt_conn_socket.recv(1024).decode("utf-8")
 
             resp = Response(data)
 
@@ -58,12 +59,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
                 break
 
             elif data == "info": #data.decode('utf-8') == "info":
-                 conn_socket.send(f"info: to jest wersja {version}".encode('utf-8'))
+                 clnt_conn_socket.send(f"info: to jest wersja {version}".encode('utf-8'))
           
             elif data == "uptime": #data.decode('utf-8') == "uptime":
                  server_life = time.time() - start_server
-                 conn_socket.send(f"czas życia servera: {server_life:0.4f}s".encode('utf-8'))
+                 clnt_conn_socket.send(f"czas życia servera: {server_life:0.4f}s".encode('utf-8'))
 
             else:   
-                conn_socket.send(f"Got your message! Thank you!\nit was: {data}".encode('utf-8'))
+                clnt_conn_socket.send(f"Got your message! Thank you!\nit was: {data}".encode('utf-8'))
             print(data) #(data.decode('utf-8'))
