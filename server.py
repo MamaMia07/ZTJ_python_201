@@ -1,69 +1,52 @@
-# echo-server.py
 import socket
 import time
 import json
 
 class Response():
-    def __init__(self, command):
-        self.command = command
-        self.commands = ["stop", "help", "uptime","info"]
+    def __init__(self): 
+        self.helping = {"stop": " : disconnect",
+                        "info": " : server software version",
+                        "uptime": " : server uptime",
+                        "help": " : menu help"}
 
-    def stop_resp(self, add):
-        print(f"Connection terminated by {add[0]}")
-        conn_socket.send(f"Unconnected".encode('utf-8'))
-        
-    def help_resp(self):
-        pass
-
-    def uptime_resp(self):
-        pass
-
-    def version_resp(self):
-        pass
-
-    def unknown_cmd_resp(self):
-        pass
+    def get_command(self, cmd):
+        self.command = cmd
+        return self.command
 
     def send_response(self):
-        pass
-        #if self.command not in self.commands: unknown_cmd_resp(self) 
-        #if self.command == "help": help_msg()
-        
+        server_life = time.time() - start_server
+        responses = {"info": {"server v.:": version},
+                     "uptime": {"server uptime:": f"{server_life:.4f}s"},
+                     "stop" : {"connection status:": "terminated"},
+                     "help": self.helping}
+        if self.command in responses:
+            data = responses[self.command]
+            response = json.dumps(data, indent = 4)
+        else:
+            data = {"Unknown command.\nType 'help' for command list.":""}
+            response = json.dumps(data, indent = 4)
+        clnt_conn_socket.sendall(response.encode("utf-8"))
+
+
 
 
 version = '0.1.0'
-HOST = "127.0.0.1"  #"156.17.181.78" # "127.0.0.1"  # Standard loopback interface address (localhost)
-PORT = 9090  # Port to listen on (non-privileged ports are > 1023)
+HOST = "127.0.0.1"  
+PORT = 9090  
 start_server = time.time()
-
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
     server.bind((HOST, PORT))
     server.listen()
-    conn_socket, address = server.accept()
-
-    with conn_socket:
+    print("Listening...")
+    clnt_conn_socket, address = server.accept()
+    resp = Response()
+    with clnt_conn_socket:
         print(f"Connected with {address[0]}")
         while True:
-            #data_recv = conn_socket.recv(1024)
-            data = conn_socket.recv(1024).decode("utf-8")
-
-            resp = Response(data)
-
-##            if data.decode("utf-8") == "stop":
-##                print(f"Connection terminated by {address[0]}")
-##                conn_socket.send(f"Unconnected".encode('utf-8'))
+            data = clnt_conn_socket.recv(1024).decode("utf-8")
+            resp.get_command(data)
+            resp.send_response()
             if data == "stop":
-                resp.stop_resp(address)
+                print("Connection terminated")
                 break
-
-            elif data == "info": #data.decode('utf-8') == "info":
-                 conn_socket.send(f"info: to jest wersja {version}".encode('utf-8'))
-          
-            elif data == "uptime": #data.decode('utf-8') == "uptime":
-                 server_life = time.time() - start_server
-                 conn_socket.send(f"czas życia servera: {server_life:0.4f}s".encode('utf-8'))
-
-            else:   
-                conn_socket.send(f"Got your message! Thank you!\nit was: {data}".encode('utf-8'))
-            print(data) #(data.decode('utf-8'))
