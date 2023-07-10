@@ -3,9 +3,9 @@ import json
 
 HOST = "127.0.0.1"  
 PORT = 9090 
-size = 8
-connected = True
+size = 1024
 
+connected = True
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as clnt_socket:
     clnt_socket.connect((HOST, PORT))
     while connected: #True:
