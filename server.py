@@ -31,6 +31,11 @@ class Response():
         else:
             return {"Unknown command.\nType 'help' for command list.":""}
  
+    def prep_serv_response(self, cmd):
+        self.serv_resp = self.set_serv_response(cmd)
+        return json.dumps(self.serv_resp, indent = 4)
+
+
 
 serv_init = ServInit()
 resp = Response(serv_init.start, serv_init.version)
@@ -45,8 +50,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
         print(f"Connected with {address[0]}")
         while True:
             data = clnt_conn_socket.recv(1024).decode("utf-8")
-            serv_resp = resp.set_serv_response(data)
-            response = json.dumps(serv_resp, indent = 4)
+            response = resp.prep_serv_response(data)
             clnt_conn_socket.sendall(response.encode("utf-8"))
             if data == "stop":
                 print("Connection terminated")
