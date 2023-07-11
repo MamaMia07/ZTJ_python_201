@@ -10,11 +10,10 @@ class ServInit():
     def __init__(self):
         self.start = time.time()
 
-
         
 class Response():
     def __init__(self, start_serv, version):
-        self.helping = {"stop": " : disconnect",
+        self.help = {"stop": " : disconnect",
                         "info": " : server software version",
                         "uptime": " : server uptime",
                         "help": " : menu help"}
@@ -22,17 +21,16 @@ class Response():
         self.version = version
 
     def set_serv_response(self, cmd):
-        server_life = time.time() - self.start
-        responses = {"info": {"server v.:": self.version},
-                     "uptime": {"server uptime:": f"{server_life:.4f}s"},
-                     "stop" : {"connection status:": "terminated"},
-                     "help": self.helping}
-        if cmd in responses:
-            return responses[cmd]
+        self.server_life = time.time() - self.start
+        self.responses = {"info": {"server v.:": self.version},
+                         "uptime": {"server uptime:": f"{self.server_life:.4f}s"},
+                         "stop" : {"connection status:": "terminated"},
+                         "help": self.help}
+        if cmd in self.responses:
+            return self.responses[cmd]
         else:
             return {"Unknown command.\nType 'help' for command list.":""}
-
-
+ 
 
 serv_init = ServInit()
 resp = Response(serv_init.start, serv_init.version)
