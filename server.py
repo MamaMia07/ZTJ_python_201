@@ -2,51 +2,54 @@ import socket
 import time
 import json
 
+
+class ServInit():
+    version = '0.1.0'
+    HOST = "127.0.0.1"  
+    PORT = 9090  
+    def __init__(self):
+        self.start = time.time()
+
+
+        
 class Response():
-    def __init__(self): 
+    def __init__(self, start_serv, version):
         self.helping = {"stop": " : disconnect",
                         "info": " : server software version",
                         "uptime": " : server uptime",
                         "help": " : menu help"}
+        self.start = start_serv
+        self.version = version
 
-    def get_command(self, cmd):
-        self.command = cmd
-        return self.command
-
-    def send_response(self):
-        server_life = time.time() - start_server
-        responses = {"info": {"server v.:": version},
+    def set_serv_response(self, cmd):
+        server_life = time.time() - self.start
+        responses = {"info": {"server v.:": self.version},
                      "uptime": {"server uptime:": f"{server_life:.4f}s"},
                      "stop" : {"connection status:": "terminated"},
                      "help": self.helping}
-        if self.command in responses:
-            data = responses[self.command]
-            response = json.dumps(data, indent = 4)
+        if cmd in responses:
+            return responses[cmd]
         else:
-            data = {"Unknown command.\nType 'help' for command list.":""}
-            response = json.dumps(data, indent = 4)
-        clnt_conn_socket.sendall(response.encode("utf-8"))
+            return {"Unknown command.\nType 'help' for command list.":""}
 
 
 
-
-version = '0.1.0'
-HOST = "127.0.0.1"  
-PORT = 9090  
-start_server = time.time()
+serv_init = ServInit()
+resp = Response(serv_init.start, serv_init.version)
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-    server.bind((HOST, PORT))
+    server.bind((serv_init.HOST, serv_init.PORT))
     server.listen()
     print("Listening...")
+
     clnt_conn_socket, address = server.accept()
-    resp = Response()
     with clnt_conn_socket:
         print(f"Connected with {address[0]}")
         while True:
             data = clnt_conn_socket.recv(1024).decode("utf-8")
-            resp.get_command(data)
-            resp.send_response()
+            serv_resp = resp.set_serv_response(data)
+            response = json.dumps(serv_resp, indent = 4)
+            clnt_conn_socket.sendall(response.encode("utf-8"))
             if data == "stop":
                 print("Connection terminated")
                 break
